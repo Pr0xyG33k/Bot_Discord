@@ -1,8 +1,12 @@
 import discord
-from discord.ext import commands
 import os
 import datetime
+import sys
+import requests
+import json
+from discord.ext import commands
 from dotenv import load_dotenv
+from bs4 import BeautifulSoup
 load_dotenv()
 
 intents = discord.Intents.default()
@@ -10,6 +14,10 @@ intents.members = True
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="$")
 ID_TOKEN = os.getenv('DISCORD_TOKEN')
+url_kali = "https://www.kali.org/blog/"
+url_htb = "https://www.hackthebox.com/blog"
+url_thm = "https://tryhackme.com/resources/blog"
+
 
 #  Bot start 
 @client.event
