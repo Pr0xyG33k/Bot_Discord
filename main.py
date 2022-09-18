@@ -16,9 +16,7 @@ bot = commands.Bot(command_prefix="$")
 ID_TOKEN = os.getenv('DISCORD_TOKEN')
 
 #### URL ####
-url_kali = "https://www.kali.org/blog/"
-url_htb = "https://www.hackthebox.com/blog"
-url_thm = "https://tryhackme.com/resources/blog"
+url_anssi_alert = "https://www.cert.ssi.gouv.fr/alerte/"
 
 
 #### Bot start #### 
@@ -27,6 +25,67 @@ async def on_ready():
     print('We have logged in as {0.user} has connected to Discord!'.format(client))
     print('-----------------------------------------------------------')
 
+#### Anssi alerts ####
+    await client.wait_until_ready()
+    channel = client.get_channel(id_channel)
+    anssi = await anssi_alerts()
+    if anssi:
+        for key, value in anssi.items():
+            link = url_anssi_alert + key
+            await channel.send(key + ": " + value[0] + " - " + value[1] + " - " + value[2] + "\n" + link + "\n" + value[3])
+
+async def anssi_alerts():
+	toReturn = {}
+	infos_liste = {}
+	line_in_file = []
+	item_to_del = []
+	###cle -> item-ref, value -> date, title, status, pdf
+	url = "https://www.cert.ssi.gouv.fr"
+	page = requests.get(url)
+	soup = BeautifulSoup(page.content, "html.parser")
+	cert_alert = soup.find_all("div", class_="cert-alert")
+	###cert_alert[0] est le titre de la section
+	for i in range(1,len(cert_alert)):
+		date = cert_alert[i].find("span", class_="item-date")
+		link = cert_alert[i].find("span", class_="item-ref")
+		title = cert_alert[i].find("span", class_="item-title")
+		status = cert_alert[i].find("span", class_="item-status")
+		pdf = cert_alert[i].find("a", class_="item-link")
+		
+		infos_liste[link.text] = []
+		infos_liste[link.text].append(date.text)
+		infos_liste[link.text].append(title.text)
+		infos_liste[link.text].append(status.text)
+		if pdf is not None:
+			infos_liste[link.text].append(url+pdf['href'])
+		else:
+			infos_liste[link.text].append("")
+
+	if not os.path.isfile("path_file_txt"):
+		f = open("path_file_txt", "w")
+		for key, value in infos_liste.items():
+			f.write(key+"\n")
+		f.close()
+		toReturn = infos_liste
+	else:
+		with open("path_file_txt") as f:
+			for line in f:
+				line_in_file.append(line.rstrip("\n"))
+		for key, value in infos_liste.items():
+			if key not in line_in_file:
+				line_in_file.append(key)
+				toReturn[key] = infos_liste[key]
+		for line in line_in_file:
+			if line not in infos_liste.keys():
+				item_to_del.append(line)
+		for item in item_to_del:
+			line_in_file.remove(item)
+		f = open("path_file_txt", "w")
+		for line in line_in_file:
+			f.write(line+"\n")
+		f.close()
+
+	return toReturn
 
 #### New Member Join Notification ####
 @client.event
