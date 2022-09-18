@@ -14,19 +14,21 @@ intents.members = True
 client = discord.Client(intents=intents)
 bot = commands.Bot(command_prefix="$")
 ID_TOKEN = os.getenv('DISCORD_TOKEN')
+
+#### URL ####
 url_kali = "https://www.kali.org/blog/"
 url_htb = "https://www.hackthebox.com/blog"
 url_thm = "https://tryhackme.com/resources/blog"
 
 
-#  Bot start 
+#### Bot start #### 
 @client.event
 async def on_ready():
     print('We have logged in as {0.user} has connected to Discord!'.format(client))
     print('-----------------------------------------------------------')
 
 
-#  New Member Join Notification
+#### New Member Join Notification ####
 @client.event
 async def on_member_join(member):
     mention = member.mention
@@ -50,7 +52,7 @@ async def on_member_join(member):
     await channel.send(embed=embed)
 
 
-#  Member Leave Notification
+#### Member Leave Notification ####
 @client.event
 async def on_member_remove(member):
     mention = member.mention
